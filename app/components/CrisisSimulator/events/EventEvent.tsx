@@ -87,12 +87,20 @@ const EventEvent: React.FC<EventEventProps> = ({ content, playNotificationSound,
       ...content.tweets.map(t => ({ type: 'tweet', data: t } as RenderableItem)),
     ];
     
-    setVisibleItems([]);
     const timeouts: NodeJS.Timeout[] = [];
     
     mainContentSequence.forEach((item, index) => {
       const timeout = setTimeout(() => {
-        setVisibleItems(prev => [...prev, item]);
+        // Play sound when item appears
+        if (item.type === 'explosion') playNotificationSound('explosion');
+        if (item.type === 'tweet') playNotificationSound('tweet');
+
+        // Set state asynchronously
+        setVisibleItems(prev => {
+          // On the first item, we start a new array. Otherwise, append.
+          const newItems = (index === 0) ? [item] : [...prev, item];
+          return newItems;
+        });
       }, index * ANIMATION_STAGGER_MS);
       timeouts.push(timeout);
     });

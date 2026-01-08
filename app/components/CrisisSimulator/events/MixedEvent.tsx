@@ -69,15 +69,17 @@ const MixedEvent: React.FC<MixedEventProps> = ({ content, playNotificationSound,
         return <BreakingNewEvent key={key} content={step.content} {...props} />;
       case 'whatsapp-chat':
         return <WhatsAppChatEvent 
-                  key={key} 
+                  key={key}
                   messages={step.content.messages}
                   chatPerfilImg={step.content.chatPerfilImg}
                   chatPerfilName={step.content.chatPerfilName}
                   playNotificationSound={playNotificationSound} 
                   {...props} 
                 />;
+      case 'headingNew':
+          return <HeadingNewEvent key={key} content={step.content} playNotificationSound={playNotificationSound} {...props} />;
       case 'alert':
-        return <AlertEvent key={key} content={step.content} {...props} />;
+        return <AlertEvent key={key} content={step.content} playNotificationSound={playNotificationSound} {...props} />;
       case 'twitterPost':
         return <TwitterPostEvent key={key} content={step.content} playNotificationSound={playNotificationSound} {...props} />;
       default:
