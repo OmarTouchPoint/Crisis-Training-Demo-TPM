@@ -11,6 +11,7 @@ import BreakingNewEvent from './BreakingNewEvent';
 import WhatsAppChatEvent from './WhatsAppChatEvent';
 import AlertEvent from './AlertEvent';
 import TwitterPostEvent from './TwitterPostEvent';
+import HeadingNewEvent from './HeadingNewEvent';
 
 interface MixedEventProps {
   content: MixedContent;

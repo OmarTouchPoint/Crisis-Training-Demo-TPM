@@ -51,7 +51,7 @@ export const ThreatNotification: React.FC<{ threat: Threat }> = ({ threat }) => 
             <span className="text-xs font-bold text-amber-400">⚠️ Amenaza Personal</span>
             <span className="text-xs text-slate-400 font-mono">De: {threat.number}</span>
         </div>
-        <div className="text-orange-200 italic text-sm">"{threat.message}"</div>
+        <div className="text-orange-200 italic text-sm">{`"${threat.message}"`}</div>
       </div>
     </div>
 );

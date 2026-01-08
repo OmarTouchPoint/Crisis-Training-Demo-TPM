@@ -19,13 +19,15 @@ const WhatsAppChatEvent: React.FC<WhatsAppChatEventProps> = ({ messages, chatPer
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setVisibleMessages([]);
     const timeouts: NodeJS.Timeout[] = [];
 
     messages.forEach((msg, idx) => {
       const timeout = setTimeout(() => {
         playNotificationSound('whatsapp');
-        setVisibleMessages(prev => [...prev, msg]);
+        setVisibleMessages(prev => {
+            const newMessages = (idx === 0) ? [msg] : [...prev, msg];
+            return newMessages;
+        });
       }, idx * MESSAGE_STAGGER_MS);
       timeouts.push(timeout);
     });

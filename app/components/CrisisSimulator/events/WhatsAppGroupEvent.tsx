@@ -18,13 +18,15 @@ const WhatsAppGroupEvent: React.FC<WhatsAppEventProps> = ({ messages, playNotifi
 
   useEffect(() => {
     // This effect controls the sequential appearance of messages
-    setVisibleMessages([]);
     const timeouts: NodeJS.Timeout[] = [];
 
     messages.forEach((msg, idx) => {
       const timeout = setTimeout(() => {
         playNotificationSound('whatsapp');
-        setVisibleMessages(prev => [...prev, msg]);
+        setVisibleMessages(prev => {
+            const newMessages = (idx === 0) ? [msg] : [...prev, msg];
+            return newMessages;
+        });
       }, idx * MESSAGE_STAGGER_MS);
       timeouts.push(timeout);
     });

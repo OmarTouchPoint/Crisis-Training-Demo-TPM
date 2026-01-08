@@ -83,7 +83,7 @@ const DecisionView: React.FC<DecisionViewProps> = ({
                 <option value="">Selecciona estrategia...</option>
                 <option value="transparent">Transparencia total con el equipo</option>
                 <option value="partial">Información parcial (evitar pánico)</option>
-                <option value="minimal">Solo información esencial "Need to know"</option>
+                <option value="minimal">Solo información esencial {'"'}Need to know{'"'}</option>
                 <option value="silence">Silencio hasta tener confirmación</option>
               </select>
             </div>
