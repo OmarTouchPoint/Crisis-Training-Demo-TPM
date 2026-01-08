@@ -1,5 +1,5 @@
 'use client'
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Clock, ArrowLeft, ArrowRight } from 'lucide-react';
 import { CrisisStep, SoundType } from '@/app/data/crisisSteps';
 import WhatsAppGroupEvent from '../events/WhatsAppGroupEvent';
@@ -36,6 +36,16 @@ const PlayingView: React.FC<PlayingViewProps> = ({
   onNextStep,
   onOptionSelect,
 }) => {
+
+  useEffect(() => {
+    // Play sounds for top-level steps that are notifications themselves
+    if (stepData.type === 'whatsappNotification') {
+      playNotificationSound('whatsapp');
+    } else if (stepData.type === 'smsNotification') {
+      playNotificationSound('sms');
+    }
+  }, [stepData, playNotificationSound]);
+
   const renderEventComponent = () => {
     switch (stepData.type) {
       case 'whatsappGroup':
@@ -53,22 +63,28 @@ const PlayingView: React.FC<PlayingViewProps> = ({
       case 'breaking-new':
         return <BreakingNewEvent content={stepData.content} />;
       case 'whatsapp-chat':
-        return <WhatsAppChatEvent content={stepData.content} />;
+        return <WhatsAppChatEvent 
+                  messages={stepData.content.messages} 
+                  chatPerfilImg={stepData.content.chatPerfilImg} 
+                  chatPerfilName={stepData.content.chatPerfilName} 
+                  playNotificationSound={playNotificationSound} 
+                />;
       case 'headingNew':
-        return <HeadingNewEvent content={stepData.content} />;
+        return <HeadingNewEvent content={stepData.content} playNotificationSound={playNotificationSound} />;
       case 'whatsappNotification':
       case 'smsNotification':
         return <NotificationEvent content={stepData.content} />;
-                case 'alert':
-                  return <AlertEvent content={stepData.content} />;
-                case 'twitterPost':
-                  return <TwitterPostEvent content={stepData.content} />;      default:
+      case 'alert':
+        return <AlertEvent content={stepData.content} playNotificationSound={playNotificationSound} />;
+      case 'twitterPost':
+        return <TwitterPostEvent content={stepData.content} playNotificationSound={playNotificationSound} />;
+      default:
         return null;
     }
   };
 
   return (
-    <div className="animate-fadeIn">
+    <div>
       {/* Header */}
       <div className="mb-8">
         <div className="flex justify-between items-end mb-4">

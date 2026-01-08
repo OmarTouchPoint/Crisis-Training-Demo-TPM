@@ -1,10 +1,34 @@
 'use client'
-import React from 'react';
-import { HeadingNewContent } from '@/app/data/crisisSteps';
+import React, { useEffect } from 'react';
+import { HeadingNewContent, SoundType } from '@/app/data/crisisSteps';
 
-const HeadingNewEvent: React.FC<{ content: HeadingNewContent }> = ({ content }) => {
+const DEFAULT_STEP_DURATION = 1200;
+
+interface HeadingNewEventProps {
+  content: HeadingNewContent;
+  playNotificationSound: (type: SoundType | string) => void;
+  onSequenceComplete?: () => void;
+}
+
+const HeadingNewEvent: React.FC<HeadingNewEventProps> = ({ content, playNotificationSound, onSequenceComplete }) => {
+  useEffect(() => {
+    const soundTimeout = setTimeout(() => {
+      // Using 'tweet' as a generic "new item" sound
+      playNotificationSound('tweet');
+    }, 500);
+
+    const sequenceTimeout = setTimeout(() => {
+      onSequenceComplete?.();
+    }, DEFAULT_STEP_DURATION);
+
+    return () => {
+      clearTimeout(soundTimeout);
+      clearTimeout(sequenceTimeout);
+    };
+  }, [playNotificationSound, onSequenceComplete]);
+
   return (
-    <div className="bg-[#F1EFEA] border-2 border-black p-6 font-serif animate-fadeInUp max-w-2xl mx-auto shadow-lg">
+    <div className="bg-[#F1EFEA] border-2 border-black p-6 font-serif max-w-2xl mx-auto shadow-lg">
       {/* Masthead */}
       <header className="text-center border-b-4 border-black pb-4 mb-4">
         <h1 className="text-6xl text-black font-black tracking-tighter">EL UNIVERSAL</h1>

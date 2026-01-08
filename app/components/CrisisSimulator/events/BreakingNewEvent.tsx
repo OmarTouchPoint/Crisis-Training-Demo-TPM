@@ -1,12 +1,25 @@
 'use client'
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BreakingNewContent } from '@/app/data/crisisSteps';
+
+const DEFAULT_STEP_DURATION = 1200;
 
 interface BreakingNewEventProps {
   content: BreakingNewContent;
+  onSequenceComplete?: () => void;
 }
 
-const BreakingNewEvent: React.FC<BreakingNewEventProps> = ({ content }) => {
+const BreakingNewEvent: React.FC<BreakingNewEventProps> = ({ content, onSequenceComplete }) => {
+  useEffect(() => {
+    // This component has a video, a more advanced implementation could
+    // listen to the video's 'onEnded' event to trigger completion.
+    // For now, a fixed delay is used for consistency.
+    const timer = setTimeout(() => {
+      onSequenceComplete?.();
+    }, DEFAULT_STEP_DURATION);
+    return () => clearTimeout(timer);
+  }, [onSequenceComplete]);
+
   return (
     <div className="bg-black border-4 border-red-700 rounded-xl p-4 animate-fadeIn shadow-2xl shadow-red-500/30">
       <div className="relative">
@@ -27,3 +40,4 @@ const BreakingNewEvent: React.FC<BreakingNewEventProps> = ({ content }) => {
 };
 
 export default BreakingNewEvent;
+

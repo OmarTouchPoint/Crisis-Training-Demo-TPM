@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { SoundType } from '@/app/data/crisisSteps';
 
 // Extender la interfaz Window para webkitAudioContext
@@ -9,34 +9,35 @@ declare global {
 }
 
 export const useSound = (soundEnabled: boolean) => {
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
   const initAudio = () => {
-    if (!audioContextRef.current) {
+    let ctx = audioContext;
+    if (!ctx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (AudioContext) {
-        audioContextRef.current = new AudioContext();
+        ctx = new AudioContext();
+        setAudioContext(ctx);
       }
     }
-    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume();
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume();
     }
   };
 
   const playNotificationSound = useCallback((type: SoundType | string) => {
-    if (!soundEnabled || !audioContextRef.current) return;
+    if (!soundEnabled || !audioContext) return;
 
-    const ctx = audioContextRef.current;
-    const osc = ctx.createOscillator();
-    const gainNode = ctx.createGain();
+    const osc = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
 
     osc.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(audioContext.destination);
 
-    const now = ctx.currentTime;
+    const now = audioContext.currentTime;
 
     switch (type) {
-      case 'whatsappGroup': // Silbido ascendente suave (tipo burbuja)
+      case 'whatsapp': // Combined whatsappGroup and single whatsapp sound
         osc.type = 'sine';
         osc.frequency.setValueAtTime(800, now);
         osc.frequency.exponentialRampToValueAtTime(1600, now + 0.15);
@@ -91,7 +92,7 @@ export const useSound = (soundEnabled: boolean) => {
         osc.stop(now + 0.05);
         break;
 
-      case 'event': // Ruido blanco/grave
+      case 'explosion': // Sound for the event
         osc.type = 'sawtooth'; 
         osc.frequency.setValueAtTime(50, now);
         osc.frequency.exponentialRampToValueAtTime(10, now + 0.8);
@@ -104,7 +105,7 @@ export const useSound = (soundEnabled: boolean) => {
       default:
         break;
     }
-  }, [soundEnabled]);
+  }, [soundEnabled, audioContext]);
 
   return { initAudio, playNotificationSound };
 };

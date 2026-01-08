@@ -3,19 +3,30 @@ import React, { useEffect } from 'react';
 import { Mail } from 'lucide-react';
 import { EmailContent, SoundType } from '@/app/data/crisisSteps';
 
+const DEFAULT_STEP_DURATION = 1200;
+
 interface EmailEventProps {
   content: EmailContent;
   playNotificationSound: (type: SoundType | string) => void;
+  onSequenceComplete?: () => void;
 }
 
-const EmailEvent: React.FC<EmailEventProps> = ({ content, playNotificationSound }) => {
+const EmailEvent: React.FC<EmailEventProps> = ({ content, playNotificationSound, onSequenceComplete }) => {
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    const soundTimeout = setTimeout(() => {
       playNotificationSound('email');
     }, 500);
-    return () => clearTimeout(timeout);
-  }, [playNotificationSound]);
+
+    const sequenceTimeout = setTimeout(() => {
+      onSequenceComplete?.();
+    }, DEFAULT_STEP_DURATION);
+
+    return () => {
+      clearTimeout(soundTimeout);
+      clearTimeout(sequenceTimeout);
+    };
+  }, [playNotificationSound, onSequenceComplete]);
 
   return (
     <div className="bg-slate-100 rounded-lg border border-slate-300 p-6 animate-fadeIn text-slate-800 shadow-lg max-w-2xl mx-auto">

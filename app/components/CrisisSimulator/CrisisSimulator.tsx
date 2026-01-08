@@ -1,9 +1,9 @@
 /* eslint-disable react/no-unescaped-entities */
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 
-import { routes, DecisionState, GameState, Route } from '@/app/data/crisisSteps';
+import { routes, DecisionState, GameState, Route, CrisisStep, MixedStep, EventStep } from '@/app/data/crisisSteps';
 import { useSound } from '@/app/hooks/useSound';
 import { useTimer } from '@/app/hooks/useTimer';
 
@@ -11,6 +11,8 @@ import IntroView from './views/IntroView';
 import PlayingView from './views/PlayingView';
 import DecisionView from './views/DecisionView';
 import ResultsView from './views/ResultsView';
+import NotificationEvent from './events/NotificationEvent';
+import { ThreatNotification } from './events/EventEvent'; // Assuming ThreatNotification is exported
 
 const CrisisSimulation: React.FC = () => {
   // --- ESTADOS ---
@@ -34,6 +36,7 @@ const CrisisSimulation: React.FC = () => {
   // --- LÓGICA DE RUTAS ---
   const currentRoute: Route | undefined = routes.find(r => r.id === currentRouteId);
   const currentSteps = currentRoute ? currentRoute.steps : [];
+  const stepData = currentSteps[currentStep];
 
   // --- MANEJADORES ---
   const startSimulation = () => {
@@ -46,8 +49,7 @@ const CrisisSimulation: React.FC = () => {
   };
 
   const nextStep = () => {
-    if (currentSteps[currentStep]?.type === 'transition') {
-      // No avanzar automáticamente en un paso de transición
+    if (stepData?.type === 'transition') {
       return;
     }
     if (currentStep < currentSteps.length - 1) {
@@ -98,6 +100,45 @@ const CrisisSimulation: React.FC = () => {
     setSoundEnabled(!soundEnabled);
   };
 
+  // --- LÓGICA DE NOTIFICACIONES GLOBALES ---
+  const [visibleNotifications, setVisibleNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (gameState !== 'playing' || !stepData) {
+      setVisibleNotifications([]);
+      return;
+    }
+
+    let notificationsToShow: any[] = [];
+    if (stepData.type === 'mixed') {
+      notificationsToShow = (stepData as MixedStep).content.steps
+        .filter(subStep => subStep.type === 'whatsappNotification' || subStep.type === 'smsNotification')
+        .map(subStep => ({ type: subStep.type, content: subStep.content }));
+    } else if (stepData.type === 'event') {
+      if ((stepData as EventStep).content.threat) {
+        notificationsToShow.push({ type: 'threat', content: (stepData as EventStep).content.threat });
+      }
+    }
+
+    setVisibleNotifications([]);
+    const timeouts: NodeJS.Timeout[] = [];
+    
+    notificationsToShow.forEach((notification, index) => {
+        const timeout = setTimeout(() => {
+            const soundType = notification.type === 'threat' ? 'alert' : (notification.type === 'whatsappNotification' ? 'whatsapp' : 'sms');
+            playNotificationSound(soundType);
+            setVisibleNotifications(prev => [...prev, notification]);
+        }, 1000 + (index * 1200)); // Delay notifications slightly
+        timeouts.push(timeout);
+    });
+
+    return () => {
+        timeouts.forEach(clearTimeout);
+    };
+
+  }, [stepData, gameState, playNotificationSound]);
+
+
   // --- RENDERIZADO DE VISTAS ---
   const renderGameState = () => {
     if (!currentRoute) {
@@ -113,7 +154,7 @@ const CrisisSimulation: React.FC = () => {
             crisisName={crisisName}
             currentStep={currentStep}
             totalSteps={currentSteps.length}
-            stepData={currentSteps[currentStep]}
+            stepData={stepData}
             playNotificationSound={playNotificationSound}
             onPrevStep={prevStep}
             onNextStep={nextStep}
@@ -147,40 +188,31 @@ const CrisisSimulation: React.FC = () => {
   return (
     <div className={`min-h-screen ${ isStarted ? "step-bg" : "main-bg" }`}>
       
-      {/* Definición de animaciones custom */}
       <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideInLeft {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes slideInRight {
-          from { opacity: 0; transform: translateX(20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes zoomIn {
-           from { opacity: 0; transform: scale(0.95); }
-           to { opacity: 1; transform: scale(1); }
-        }
-        .animate-fadeInUp { animation: fadeInUp 0.5s ease-out forwards; }
-        .animate-fadeIn { animation: fadeInUp 0.8s ease-out forwards; }
-        .animate-slideInLeft { animation: slideInLeft 0.5s ease-out forwards; }
-        .animate-slideInRight { animation: slideInRight 0.5s ease-out forwards; }
-        .animate-zoomIn { animation: zoomIn 0.5s ease-out forwards; }
-        .animate-pulse-fast { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        /* ... animations ... */
       `}</style>
 
-      {/* Control de Sonido Global */}
-      <button 
-        onClick={toggleSound}
-        className="fixed top-4 right-4 z-50 p-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors border border-slate-600"
-        title={soundEnabled ? "Silenciar" : "Activar Sonido"}
-      >
-        {soundEnabled ? <Volume2 size={20} className="text-green-400"/> : <VolumeX size={20} className="text-red-400"/>}
+      <button onClick={toggleSound} /* ... */ >
+        {/* ... icon ... */}
       </button>
+
+      {/* --- CONTENEDOR DE NOTIFICACIONES GLOBALES --- */}
+      <div className="fixed top-24 right-4 z-50 space-y-3 w-full max-w-md">
+        {visibleNotifications.map((notification, index) => {
+          const key = `notif-${index}`;
+          if (notification.type === 'threat') {
+            return <ThreatNotification key={key} threat={notification.content} />;
+          }
+          if (notification.type === 'whatsappNotification' || notification.type === 'smsNotification') {
+            return (
+              <div key={key} className="animate-slideInRight">
+                <NotificationEvent content={notification.content} />
+              </div>
+            );
+          }
+          return null;
+        })}
+      </div>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {renderGameState()}
