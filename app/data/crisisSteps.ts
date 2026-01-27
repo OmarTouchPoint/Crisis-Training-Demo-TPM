@@ -98,6 +98,12 @@ export interface TransitionContent {
   options: TransitionOption[];
 }
 
+export interface MeetingRoom {
+  title: string;
+  url: string;
+  linkText: string;
+}
+
 // Discriminación de tipos para los pasos
 export interface BaseStep {
   time: string;
@@ -169,7 +175,14 @@ export interface TwitterPostStep extends BaseStep {
   content: Tweet;
 }
 
-export type CrisisStep = WhatsAppGroupStep | EmailStep | MixedStep | EventStep | InstructionsStep | TransitionStep | BreakingNewStep | WhatsAppChatStep | HeadingNewStep | WhatsAppNotificationStep | SMSNotificationStep | AlertStep | TwitterPostStep;
+export interface MeetingRoomStep extends BaseStep {
+  type: 'meetingRoom';
+  content: {
+    rooms: MeetingRoom[];
+  };
+}
+
+export type CrisisStep = WhatsAppGroupStep | EmailStep | MixedStep | EventStep | InstructionsStep | TransitionStep | BreakingNewStep | WhatsAppChatStep | HeadingNewStep | WhatsAppNotificationStep | SMSNotificationStep | AlertStep | TwitterPostStep | MeetingRoomStep;
 
 // --- ESTRUCTURA DE RUTAS ---
 
@@ -403,6 +416,30 @@ export const routes: Route[] = [
               ]
             }
           },
+      {
+        time: "10:59 AM",
+        title: "Salas de Reuniones para Equipos de Crisis",
+        type: "meetingRoom",
+        content: {
+          rooms: [
+            {
+              title: "Equipo 1 - Comunicación Externa",
+              url: "https://meet.google.com/abc-defg-hij",
+              linkText: "Si eres del Equipo de Comunicación Externa, haz clic aquí para unirte a tu sala."
+            },
+            {
+              title: "Equipo 2 - Coordinación Interna",
+              url: "https://meet.google.com/klm-nopq-rst",
+              linkText: "Si eres del Equipo de Coordinación Interna, haz clic aquí para unirte a tu sala."
+            },
+            {
+              title: "Equipo 3 - Legal y Seguridad",
+              url: "https://meet.google.com/uvw-xyza-bcd",
+              linkText: "Si eres del Equipo Legal y de Seguridad, haz clic aquí para unirte a tu sala."
+            }
+          ]
+        }
+      },
       {
         time: "11:00 AM",
         title: "Punto de Decisión Crítico",

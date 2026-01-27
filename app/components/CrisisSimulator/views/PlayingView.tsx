@@ -14,6 +14,7 @@ import HeadingNewEvent from '../events/HeadingNewEvent';
 import NotificationEvent from '../events/NotificationEvent';
 import AlertEvent from '../events/AlertEvent';
 import TwitterPostEvent from '../events/TwitterPostEvent';
+import MeetingRoomEvent from '../events/MeetingRoomEvent';
 
 interface PlayingViewProps {
   crisisName: string;
@@ -78,6 +79,8 @@ const PlayingView: React.FC<PlayingViewProps> = ({
         return <AlertEvent content={stepData.content} playNotificationSound={playNotificationSound} />;
       case 'twitterPost':
         return <TwitterPostEvent content={stepData.content} playNotificationSound={playNotificationSound} />;
+      case 'meetingRoom':
+        return <MeetingRoomEvent content={stepData.content} />;
       default:
         return null;
     }
